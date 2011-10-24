@@ -9,7 +9,7 @@
 from setuptools import setup, find_packages
 
 kwargs = {'author': 'Kenneth T. Moore',
- 'author_email': 'kenneth.t.mooore-1@nasa.gov',
+ 'author_email': 'kenneth.t.moore-1@nasa.gov',
  'classifiers': ['Intended Audience :: Science/Research',
                  'Topic :: Scientific/Engineering'],
  'description': 'OpenMDAO driver wrapper for the open-source optimization package pyOpt',
@@ -20,7 +20,7 @@ kwargs = {'author': 'Kenneth T. Moore',
  'keywords': ['openmdao'],
  'license': 'Apache License, Version 2.0',
  'maintainer': 'Kenneth T. Moore',
- 'maintainer_email': 'kenneth.t.mooore-1@nasa.gov',
+ 'maintainer_email': 'kenneth.t.moore-1@nasa.gov',
  'name': 'pyopt_driver',
  'package_data': {'pyopt_driver': ['sphinx_build/html/usage.html',
                                    'sphinx_build/html/py-modindex.html',

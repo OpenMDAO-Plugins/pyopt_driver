@@ -5,7 +5,7 @@ Package Metadata
 
 - **author:** Kenneth T. Moore
 
-- **author-email:** kenneth.t.mooore-1@nasa.gov
+- **author-email:** kenneth.t.moore-1@nasa.gov
 
 - **classifier**:: 
 
@@ -27,7 +27,7 @@ Package Metadata
 
 - **maintainer:** Kenneth T. Moore
 
-- **maintainer-email:** kenneth.t.mooore-1@nasa.gov
+- **maintainer-email:** kenneth.t.moore-1@nasa.gov
 
 - **name:** pyopt_driver
 
