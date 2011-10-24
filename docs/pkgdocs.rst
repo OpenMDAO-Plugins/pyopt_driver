@@ -14,9 +14,20 @@ Package Metadata
 
 - **description-file:** README.txt
 
-- **home-page:** https://github.com/OpenMDAO/pyOpt-Driver
+- **entry_points**:: 
+
+    [openmdao.driver]
+    pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
+
+- **home-page:** https://github.com/OpenMDAO-Plugins/pyopt-driver
 
 - **keywords:** openmdao
+
+- **license:** Apache License, Version 2.0
+
+- **maintainer:** Kenneth T. Moore
+
+- **maintainer-email:** kenneth-t-mooore-1@nasa.gov
 
 - **name:** pyopt_driver
 
@@ -25,11 +36,11 @@ Package Metadata
 - **requires-python**:: 
 
     >=2.6
-    <2.7
+    <3.0
 
 - **static_path:** [ '_static' ]
 
-- **summary:** Driver wrapper for pyOpt
+- **summary:** OpenMDAO driver wrapper for the open-source optimization package pyOpt
 
-- **version:** 0.3
+- **version:** 0.4
 
