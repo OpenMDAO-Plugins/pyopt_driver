@@ -4,9 +4,12 @@ import unittest
 # pylint: disable-msg=E0611,F0401
 import numpy
 import math
-from nose import SkipTest
+from nose import SkipTest, runmodule
 
-from pyopt_driver.pyopt_driver import pyOptDriver
+try:
+    from pyopt_driver.pyopt_driver import pyOptDriver
+except ImportError:
+    pass
 
 from openmdao.util.testutil import assert_rel_error
 from openmdao.main.api import Assembly, set_as_top, Component
@@ -150,6 +153,12 @@ class pyOptDriverTestCase(unittest.TestCase):
         
     def test_basic_CONMIN(self):
         
+        
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")  
+        
         self.top = OptimizationConstrained()
         set_as_top(self.top)
         
@@ -168,6 +177,11 @@ class pyOptDriverTestCase(unittest.TestCase):
         assert_rel_error(self, self.top.paraboloid.y, -7.824225, 0.01)
 
     def test_basic_CONMIN_derivatives(self):
+        
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")  
         
         self.top = OptimizationConstrainedDerivatives()
         set_as_top(self.top)
@@ -189,6 +203,11 @@ class pyOptDriverTestCase(unittest.TestCase):
     def test_GA_multi_obj_multi_con(self):
         # Note, just verifying that things work functionally, rather than run this
         # for many generations.
+        
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")  
         
         self.top = MultiObjectiveOptimization()
         set_as_top(self.top)
@@ -219,5 +238,5 @@ class pyOptDriverTestCase(unittest.TestCase):
         
         
 if __name__ == "__main__":
-    unittest.main()
+    runmodule()
     

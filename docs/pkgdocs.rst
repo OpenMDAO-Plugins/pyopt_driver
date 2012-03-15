@@ -16,6 +16,10 @@ Package Metadata
 
 - **entry_points**:: 
 
+    [openmdao.container]
+    pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
+    [openmdao.component]
+    pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     [openmdao.driver]
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
 
@@ -42,5 +46,5 @@ Package Metadata
 
 - **summary:** OpenMDAO driver wrapper for the open-source optimization package pyOpt
 
-- **version:** 0.4
+- **version:** 0.5
 
