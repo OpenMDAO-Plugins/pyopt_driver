@@ -21,13 +21,11 @@ from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 class OptimizationConstrained(Assembly):
     """Constrained optimization of the Paraboloid with CONMIN."""
     
-    def __init__(self):
+    def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
         
         # pylint: disable-msg=E1101
         
-        super(OptimizationConstrained, self).__init__()
-
         # Create Paraboloid component instances
         self.add('paraboloid', Paraboloid())
 
@@ -52,13 +50,11 @@ class OptimizationConstrained(Assembly):
 class OptimizationConstrainedDerivatives(Assembly):
     """Constrained optimization of the Paraboloid with CONMIN."""
     
-    def __init__(self):
+    def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
         
         # pylint: disable-msg=E1101
         
-        super(OptimizationConstrainedDerivatives, self).__init__()
-
         # Create Paraboloid component instances
         self.add('paraboloid', ParaboloidDerivative())
 
@@ -112,12 +108,10 @@ class MultiFunction(Component):
 class MultiObjectiveOptimization(Assembly):
     """Multi Objective optimization of the  with NSGA2."""
 
-    def __init__(self):
+    def configure(self):
         """ Creates a new Assembly containing a MultiFunction and an optimizer"""
 
         # pylint: disable-msg=E1101
-
-        super(MultiObjectiveOptimization, self).__init__()
 
         # Create MultiFunction component instances
         self.add('multifunction', MultiFunction())

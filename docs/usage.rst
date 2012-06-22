@@ -29,7 +29,7 @@ OpenMDAO examples.
 
 .. testcode:: pyOpt_basic
 
-        from pyopt_driver import pyOptDriver
+        from pyopt_driver.pyopt_driver import pyOptDriver
         
         from openmdao.main.api import Assembly
         from openmdao.examples.simple.paraboloid import Paraboloid
@@ -37,11 +37,9 @@ OpenMDAO examples.
         class OptimizationConstrained(Assembly):
             """Constrained optimization of a Paraboloid."""
             
-            def __init__(self):
+            def configure(self):
                 """ Creates a new Assembly containing a Paraboloid and an optimizer"""
                 
-                super(OptimizationConstrained, self).__init__()
-        
                 # Create Paraboloid component instances
                 self.add('paraboloid', Paraboloid())
         
