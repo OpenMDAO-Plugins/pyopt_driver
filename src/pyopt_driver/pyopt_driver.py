@@ -22,8 +22,8 @@ def _check_imports():
     """
     
     optlist = ['ALHSO', 'ALPSO', 'COBYLA', 'CONMIN', 'FSQP', 'GCMMA', 'KSOPT',
-               'MIDACO', 'MMA', 'MMFD', 'NLPQL', 'NSGA2', 'PSQP', 'SLSQP', 'SNOPT', 
-               'SOLVOPT']
+               'MIDACO', 'MMA', 'MMFD', 'NLPQL', 'NSGA2', 'PSQP', 'SLSQP', 
+               'SNOPT', 'SOLVOPT']
 
     for optimizer in optlist:
         try:
@@ -42,7 +42,7 @@ class pyOptDriver(DriverUsesDerivatives):
                        desc='Name of optimizers to use')
     title = Str('Optimization using pyOpt', iotype='in', 
                 desc='Title of this optimization run')
-    options = Dict({}, iotype='in', 
+    options = Dict(iotype='in', 
                    desc='Dictionary of optimization parameters')
     print_results = Bool(True, iotype = 'in', 
                          desc='Print pyOpt results if True')
@@ -260,7 +260,6 @@ class pyOptDriver(DriverUsesDerivatives):
             
             # Calculate the gradient. Fake finite difference
             # is supported using the FiniteDifference differntiator.
-            self.calc_derivatives(first=True)
             self.ffd_order = 1
             self.differentiator.calc_gradient()
             self.ffd_order = 0
