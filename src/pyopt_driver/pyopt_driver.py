@@ -12,8 +12,11 @@ from pyOpt import Optimization
         
 from openmdao.lib.datatypes.api import Bool, Dict, Enum, Str
 from openmdao.main.api import DriverUsesDerivatives
-from openmdao.main.interfaces import IHasParameters, HasConstraints, \
+from openmdao.main.interfaces import IHasParameters, IHasConstraints, \
                                      IHasObjective, implements, IOptimizer
+from openmdao.main.hasparameters import HasParameters
+from openmdao.main.hasconstraints import HasConstraints
+from openmdao.main.hasobjective import HasObjectives
 from openmdao.util.decorators import add_delegate
 
 def _check_imports():
