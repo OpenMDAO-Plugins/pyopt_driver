@@ -12,9 +12,8 @@ from pyOpt import Optimization
         
 from openmdao.lib.datatypes.api import Bool, Dict, Enum, Str
 from openmdao.main.api import DriverUsesDerivatives
-from openmdao.main.hasparameters import HasParameters
-from openmdao.main.hasconstraints import HasConstraints
-from openmdao.main.hasobjective import HasObjectives
+from openmdao.main.interfaces import IHasParameters, HasConstraints, \
+                                     IHasObjective, implements, IOptimizer
 from openmdao.util.decorators import add_delegate
 
 def _check_imports():
@@ -38,6 +37,8 @@ class pyOptDriver(DriverUsesDerivatives):
     """ Driver wrapper for pyOpt. 
     """
 
+    implements(IHasParameters, IHasConstraints, IHasObjective, IOptimizer)
+    
     optimizer = Enum('ALPSO', _check_imports(), iotype='in', 
                        desc='Name of optimizers to use')
     title = Str('Optimization using pyOpt', iotype='in', 
