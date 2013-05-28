@@ -143,6 +143,7 @@ class pyOptDriver(DriverUsesDerivatives):
             dvals.append(opt_prob.solution(0)._variables[i].value)
         self.set_parameters(dvals)
         self.run_iteration()
+        self.record_case()
         
         # Save the most recent solution.
         self.pyOpt_solution = opt_prob.solution(0)
@@ -205,6 +206,12 @@ class pyOptDriver(DriverUsesDerivatives):
                     
             g = array(g)
             
+            # Print out cases whenever the objective function is evaluated.
+            # TODO: pyOpt's History object might be better suited, though
+            # it does not seem to be part of the Optimization object at
+            # present.
+            self.record_case()
+            
         except Exception, msg:
             
             # Exceptions seem to be swallowed by the C code, so this
@@ -263,7 +270,7 @@ class pyOptDriver(DriverUsesDerivatives):
             dg = zeros([n_con, n_param])
             
             # Calculate the gradient. Fake finite difference
-            # is supported using the FiniteDifference differntiator.
+            # is supported using the FiniteDifference differentiator.
             self.ffd_order = 1
             self.differentiator.calc_gradient()
             self.ffd_order = 0

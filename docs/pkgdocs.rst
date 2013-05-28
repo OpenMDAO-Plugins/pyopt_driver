@@ -17,11 +17,19 @@ Package Metadata
 - **entry_points**:: 
 
     [openmdao.component]
+    test_pyopt_driver.OptimizationConstrained=test_pyopt_driver:OptimizationConstrained
+    test_pyopt_driver.OptimizationConstrainedDerivatives=test_pyopt_driver:OptimizationConstrainedDerivatives
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
+    test_pyopt_driver.MultiObjectiveOptimization=test_pyopt_driver:MultiObjectiveOptimization
+    test_pyopt_driver.MultiFunction=test_pyopt_driver:MultiFunction
     [openmdao.driver]
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     [openmdao.container]
+    test_pyopt_driver.OptimizationConstrained=test_pyopt_driver:OptimizationConstrained
+    test_pyopt_driver.OptimizationConstrainedDerivatives=test_pyopt_driver:OptimizationConstrainedDerivatives
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
+    test_pyopt_driver.MultiObjectiveOptimization=test_pyopt_driver:MultiObjectiveOptimization
+    test_pyopt_driver.MultiFunction=test_pyopt_driver:MultiFunction
 
 - **home-page:** https://github.com/OpenMDAO-Plugins/pyopt-driver
 
@@ -46,5 +54,5 @@ Package Metadata
 
 - **summary:** OpenMDAO driver wrapper for the open-source optimization package pyOpt
 
-- **version:** 0.7
+- **version:** 0.8
 
