@@ -195,7 +195,7 @@ class pyOptDriver(DriverUsesDerivatives):
             g = []
             
             for con in self.get_eq_constraints().values():
-                g.append(con.evaluate(self.parent))
+                g.append(con.evaluate(self.parent)[0])
             
             for con in self.get_ineq_constraints().values():
                 val = con.evaluate(self.parent)
