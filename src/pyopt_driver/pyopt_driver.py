@@ -172,6 +172,8 @@ class pyOptDriver(DriverUsesDerivatives):
         """
 
         fail = 1
+        f = []
+        g = []
         
         try:
             
@@ -185,15 +187,12 @@ class pyOptDriver(DriverUsesDerivatives):
             self.run_iteration()
             
             # Get the objective function evaluations
-            f = []
             for obj in self.eval_objectives():
                 f.append(obj)
                 
             f = array(f)
             
             # Get the constraint evaluations
-            g = []
-            
             for con in self.get_eq_constraints().values():
                 g.append(con.evaluate(self.parent)[0])
             
@@ -255,6 +254,8 @@ class pyOptDriver(DriverUsesDerivatives):
         """
         
         fail = 1
+        df = []
+        dg = []
         
         try:
             # Keys are used to conveniently access the gradient
