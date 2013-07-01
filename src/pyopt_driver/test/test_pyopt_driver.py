@@ -13,7 +13,7 @@ except ImportError:
 
 from openmdao.util.testutil import assert_rel_error
 from openmdao.main.api import Assembly, set_as_top, Component
-from openmdao.lib.datatypes.api import Float
+from openmdao.lib.datatypes.api import Float, Int
 from openmdao.lib.differentiators.finite_difference import FiniteDifference
 from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
@@ -137,6 +137,87 @@ class MultiObjectiveOptimization(Assembly):
         self.driver.add_constraint('multifunction.g2_x  >= 1.0')
         
         
+class BenchMark(Component):
+        
+    # set up interface to the framework  
+    # pylint: disable-msg=E1101
+
+    x1  = Int(10, iotype='in', desc='The variable x1')
+    x2  = Int(10, iotype='in', desc='The variable x2')
+    x3  = Int(10, iotype='in', desc='The variable x2')
+
+    f_x = Float(iotype='out', desc='f(x)')
+
+    g1_x = Float(iotype='out', desc='g(x)')
+    h1_x = Float(iotype='out', desc='h(x)')
+
+    
+    def execute(self):
+        
+        x1 = self.x1
+        x2 = self.x2
+        x3 = self.x3
+        
+        #print "WAHHHH: ", self.x1
+        
+        self.f_x = -x1*x2*x3
+        
+        self.g1_x = x1 + 2.*x2 + 2.*x3 - 72.0
+        self.h1_x = -x1 - 2.*x2 - 2.*x3
+        
+class BenchMarkOptimization(Assembly):
+    """Benchamark Problem Objective optimization with ALPSO."""
+
+    def __init__(self):
+        """ Creates a new Assembly containing a MultiFunction and an optimizer"""
+
+        # pylint: disable-msg=E1101
+
+        super(BenchMarkOptimization, self).__init__()
+
+        # Create MultiFunction component instances
+        self.add('benchmark', BenchMark())
+
+        # Create ALPSO Optimizer instance
+        self.add('driver', pyOptDriver())
+
+        # Driver process definition
+        self.driver.workflow.add('benchmark')
+
+        # PyOpt Flags
+        self.driver.optimizer = 'ALPSO'
+        self.driver.title='Bench mark problem 4 - Unconstrained'
+        optdict = {}
+        optdict['SwarmSize'] = 40
+        optdict['maxOuterIter'] = 100
+        optdict['maxInnerIter'] = 3
+        optdict['minInnerIter'] = 3
+        optdict['etol'] = 1e-4
+        optdict['itol'] = 1e-4
+        optdict['c1'] = 0.8
+        optdict['c2'] = 0.8
+        optdict['w1'] = 0.9
+        optdict['nf'] = 5
+        optdict['dt'] = 1.0
+        optdict['vcrazy'] = 1e-4
+        optdict['Scaling'] = 1
+        optdict['seed'] = 1.0
+
+        self.driver.options = optdict
+
+        # ALPSO Objective
+        self.driver.add_objective('benchmark.f_x')
+
+        # ALPSO Design Variables
+        self.driver.add_parameter('benchmark.x1', low= 0, high=42)
+        self.driver.add_parameter('benchmark.x2', low= 0, high=42)
+        self.driver.add_parameter('benchmark.x3', low= 0, high=42)
+
+        # ALPSO Constraints
+        self.driver.add_constraint('benchmark.g1_x <= 0.0')
+        self.driver.add_constraint('benchmark.h1_x <= 0.0')
+        
+        
 class pyOptDriverTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -229,8 +310,34 @@ class pyOptDriverTestCase(unittest.TestCase):
         
         self.top.run()
         
+    def test_ALPSO_integer_design_var(self):
         
+        #    probNEW.py
+        #
+        #Set's up component for Schittkowski's TP37 Problem.
+        #
+        #    min 	-x1*x2*x3
+        #    s.t.:	x1 + 2.*x2 + 2.*x3 - 72 <= 0
+        #            - x1 - 2.*x2 - 2.*x3 <= 0
+        #            0 <= xi <= 42,  i = 1,2,3
+        #    
+        #    f* = -3456 , x* = [24, 12, 12]
+        # 
+        # *Problem taken from pyOpt example tp037        
+        
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")  
+        
+        opt_problem = BenchMarkOptimization()
+        set_as_top(opt_problem)
+        opt_problem.run()
+        
+        self.assertEqual(opt_problem.benchmark.x1, 24)
+        self.assertEqual(opt_problem.benchmark.x2, 12)
+        self.assertEqual(opt_problem.benchmark.x3, 12)
         
 if __name__ == "__main__":
-    runmodule()
+    unittest.main()
     

@@ -57,6 +57,7 @@ class pyOptDriver(DriverUsesDerivatives):
         super(pyOptDriver, self).__init__()
         
         self.pyOpt_solution = None
+        self.param_type = {}
     
     def execute(self):
         """pyOpt execution. Note that pyOpt controls the execution, and the
@@ -68,6 +69,7 @@ class pyOptDriver(DriverUsesDerivatives):
                                 obj_set={}, con_set={})
         
         # Add all parameters
+        self.param_type = {}
         for name, param in self.get_parameters().iteritems():
             
             val = param.evaluate()
@@ -95,6 +97,7 @@ class pyOptDriver(DriverUsesDerivatives):
             
             opt_prob.addVar(name, vartype, lower=param.low, upper=param.high, 
                             value=val, choices=choices)
+            self.param_type[name] = vartype
 
         # Add all objectives
         for name in self.get_objectives().keys():
@@ -141,6 +144,14 @@ class pyOptDriver(DriverUsesDerivatives):
         dvals = []
         for i in range(0, len(opt_prob.solution(0)._variables)):
             dvals.append(opt_prob.solution(0)._variables[i].value)
+            
+        # Integer parameters come back as floats, so we need to round them
+        # and turn them into python integers before setting.
+        if 'i' in self.param_type.values():
+            for j, param in enumerate(self.get_parameters().keys()):
+                if self.param_type[param] == 'i':
+                    dvals[j] = int(round(dvals[j]))
+            
         self.set_parameters(dvals)
         self.run_iteration()
         self.record_case()
@@ -177,11 +188,21 @@ class pyOptDriver(DriverUsesDerivatives):
         
         try:
             
-            # Note: Sometimes pyOpt sends us an x array that is larger than the 
-            # number of parameters. In the pyOpt examples, they just take the first
-            # n entries as the parameters, so we do too.
-            nparam = self.get_parameters().__len__()
-            self.set_parameters([val for val in x[0:nparam]])
+            # Note: Sometimes pyOpt sends us an x array that is larger than
+            # the number of parameters. In the pyOpt examples, they just take
+            # the first n entries as the parameters, so we do too.
+            nparam = len(self.param_type)
+            
+            # Integer parameters come back as floats, so we need to round them
+            # and turn them into python integers before setting.
+            if 'i' in self.param_type.values():
+                for j, param in enumerate(self.get_parameters().keys()):
+                    if self.param_type[param] == 'i':
+                        self.set_parameter_by_name(param, int(round(x[j])))
+                    else:
+                        self.set_parameter_by_name(param, x[j])
+            else:
+                self.set_parameters([val for val in x[0:nparam]])
             
             # Execute the model
             self.run_iteration()
@@ -216,6 +237,9 @@ class pyOptDriver(DriverUsesDerivatives):
             # Exceptions seem to be swallowed by the C code, so this
             # should give the user more info than the dreaded "segfault"
             print "Exception: %s" % str(msg)
+            print 70*"="
+            import traceback
+            traceback.print_exc()
             return f, g, fail
         
         fail = 0
