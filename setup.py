@@ -63,7 +63,7 @@ kwargs = {'author': 'Kenneth T. Moore',
  'package_dir': {'': 'src'},
  'packages': ['pyopt_driver'],
  'url': 'https://github.com/OpenMDAO-Plugins/pyopt-driver',
- 'version': '0.11',
+ 'version': '0.12',
  'zip_safe': False}
 
 

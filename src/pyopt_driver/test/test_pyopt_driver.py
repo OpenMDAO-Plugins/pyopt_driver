@@ -14,7 +14,6 @@ except ImportError:
 from openmdao.util.testutil import assert_rel_error
 from openmdao.main.api import Assembly, set_as_top, Component
 from openmdao.lib.datatypes.api import Float, Int
-from openmdao.lib.differentiators.finite_difference import FiniteDifference
 from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 
@@ -75,8 +74,6 @@ class OptimizationConstrainedDerivatives(Assembly):
         self.driver.add_constraint('paraboloid.x-paraboloid.y >= 15.0')
         
         self.driver.print_results = False
-        
-        self.driver.differentiator = FiniteDifference()
 
         
 class MultiFunction(Component):
@@ -245,6 +242,7 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.top.driver.title='Little Test'
         optdict = {}
         self.top.driver.options = optdict
+        self.top.driver.pyopt_diff = True
 
         self.top.run()
         

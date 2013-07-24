@@ -11,7 +11,7 @@ from numpy import array, float32, float64, int32, int64, zeros
 from pyOpt import Optimization
         
 from openmdao.lib.datatypes.api import Bool, Dict, Enum, Str
-from openmdao.main.api import DriverUsesDerivatives
+from openmdao.main.api import Driver
 from openmdao.main.interfaces import IHasParameters, IHasConstraints, \
                                      IHasObjective, implements, IOptimizer
 from openmdao.main.hasparameters import HasParameters
@@ -36,7 +36,7 @@ def _check_imports():
     return optlist
     
 @add_delegate(HasParameters, HasConstraints, HasObjectives)
-class pyOptDriver(DriverUsesDerivatives):
+class pyOptDriver(Driver):
     """ Driver wrapper for pyOpt. 
     """
 
@@ -50,6 +50,8 @@ class pyOptDriver(DriverUsesDerivatives):
                    desc='Dictionary of optimization parameters')
     print_results = Bool(True, iotype = 'in', 
                          desc='Print pyOpt results if True')
+    pyopt_diff = Bool(False, iotype='in', desc='Set to True to let pyOpt'
+                       'calculate the gradient.')
     
     def __init__(self):
         """Initialize pyopt - not much needed."""
@@ -128,12 +130,12 @@ class pyOptDriver(DriverUsesDerivatives):
             opt.setOption(option, value)
 
         # Execute the optimization problem
-        if self.differentiator:
-            # Use OpenMDAO's differentiator for the gradient
-            opt(opt_prob, sens_type=self.gradfunc)
-        else:
+        if self.pyopt_diff:
             # Use pyOpt's internal finite difference
             opt(opt_prob, sens_type='FD')
+        else:
+            # Use OpenMDAO's differentiator for the gradient
+            opt(opt_prob, sens_type=self.gradfunc)
         
         # Print results
         if self.print_results:
@@ -213,19 +215,17 @@ class pyOptDriver(DriverUsesDerivatives):
                 
             f = array(f)
             
-            # Get the constraint evaluations
-            for con in self.get_eq_constraints().values():
-                g.append(con.evaluate(self.parent)[0])
-            
-            for con in self.get_ineq_constraints().values():
-                val = con.evaluate(self.parent)
-                if '>' in val[2]:
-                    g.append(val[1]-val[0])
-                else:
-                    g.append(val[0]-val[1])
-                    
-            g = array(g)
-            
+            # Constraints. Note that SLSQP defines positive as satisfied.
+            con_list = []
+            if len(self.get_eq_constraints()) > 0 :
+                con_list.extend([v.evaluate(self.parent) for \
+                                v in self.get_eq_constraints().values()])
+            if len(self.get_ineq_constraints()) > 0 :
+                con_list.extend([v.evaluate(self.parent) for \
+                                v in self.get_ineq_constraints().values()])
+                
+            g = array(con_list)
+                
             # Print out cases whenever the objective function is evaluated.
             # TODO: pyOpt's History object might be better suited, though
             # it does not seem to be part of the Optimization object at
@@ -278,41 +278,31 @@ class pyOptDriver(DriverUsesDerivatives):
         """
         
         fail = 1
-        df = []
-        dg = []
         
         try:
-            # Keys are used to conveniently access the gradient
-            param_names = self.get_parameters().keys()
-            n_param = len(param_names)
-            obj_names = self.get_objectives().keys()
-            n_obj = len(obj_names)
-            con_names = list(self.get_eq_constraints().keys() + \
-                           self.get_ineq_constraints().keys())
-            n_con = len(con_names)
-
-            df = zeros([n_obj, n_param])
-            dg = zeros([n_con, n_param])
-            
-            # Calculate the gradient. Fake finite difference
-            # is supported using the FiniteDifference differentiator.
-            self.ffd_order = 1
-            self.differentiator.calc_gradient()
-            self.ffd_order = 0
+            inputs = self.get_parameters().keys()
+            obj = ["%s.out0" % item.pcomp_name for item in \
+                   self.get_objectives().values()]
+            econ = ["%s.out0" % item.pcomp_name for item in \
+                    self.get_eq_constraints().values()]
+            icon = ["%s.out0" % item.pcomp_name for item in \
+                    self.get_ineq_constraints().values()]
     
-            i = 0
-            for name in obj_names:
-                df[i][:] = self.differentiator.get_gradient(name)
-                i += 1
+            J = self.workflow.calc_gradient(inputs, obj + econ + icon)
             
-            i = 0
-            for param_name in param_names:
-                j = 0
-                for con_name in con_names:
-                    dg[j][i] = self.differentiator.get_derivative(con_name,
-                                                               wrt=param_name)
-                    j += 1 
-                i += 1 
+            nobj = len(obj)
+            ncon = len(econ) + len(icon)
+            nparam = len(inputs)
+            
+            df = zeros([nobj, nparam])
+            dg = zeros([ncon, nparam])
+            
+            df = J[0:nobj, :]
+            
+            n1 = nobj
+            n2 = nobj + ncon
+            if ncon > 0:
+                dg = -J[n1:n2, :]
 
         except Exception, msg:
 
@@ -325,9 +315,3 @@ class pyOptDriver(DriverUsesDerivatives):
         
         return df, dg, fail
 
-if __name__ == "__main__": # pragma: no cover         
-
-    from openmdao.main.api import set_as_top
-    from openmdao.main.api import Assembly, set_as_top
-    from openmdao.lib.differentiators.finite_difference import FiniteDifference
-    from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
