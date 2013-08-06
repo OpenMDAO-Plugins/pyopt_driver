@@ -302,7 +302,7 @@ class pyOptDriver(Driver):
             n1 = nobj
             n2 = nobj + ncon
             if ncon > 0:
-                dg = -J[n1:n2, :]
+                dg = J[n1:n2, :]
 
         except Exception, msg:
 
