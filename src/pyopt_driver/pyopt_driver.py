@@ -284,7 +284,7 @@ class pyOptDriver(Driver):
         dg = []
 
         try:
-            inputs = self.get_parameters().keys()
+            inputs = self.list_param_group_targets()
             obj = ["%s.out0" % item.pcomp_name for item in \
                    self.get_objectives().values()]
             econ = ["%s.out0" % item.pcomp_name for item in \

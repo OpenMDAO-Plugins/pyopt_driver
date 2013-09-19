@@ -17,7 +17,7 @@ def _sys_path_add(toadd=None):
         distdir = os.path.dirname(os.path.dirname(__file__))
         sys.path = [distdir] + [os.path.join(distdir, p) for p in toadd] + sys.path
 
-_sys_path_add(['temp', 'pyopt_driver', 'src', 'src/pyopt_driver', 'src/pyopt_driver/test'])
+_sys_path_add(['src', 'src/pyopt_driver', 'src/pyopt_driver/test'])
 
 # General configuration
 # ---------------------
