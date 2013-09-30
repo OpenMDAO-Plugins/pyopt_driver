@@ -2,8 +2,6 @@
 import unittest
 
 # pylint: disable-msg=E0611,F0401
-import numpy
-import math
 from nose import SkipTest, runmodule
 
 try:
@@ -13,77 +11,108 @@ except ImportError:
 
 from openmdao.util.testutil import assert_rel_error
 from openmdao.main.api import Assembly, set_as_top, Component
-from openmdao.lib.datatypes.api import Float
-from openmdao.lib.differentiators.finite_difference import FiniteDifference
+from openmdao.main.datatypes.api import Array, Float
 from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 
+
 class OptimizationConstrained(Assembly):
     """Constrained optimization of the Paraboloid with CONMIN."""
-    
+
     def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
-        
+
         # pylint: disable-msg=E1101
-        
+
         # Create Paraboloid component instances
         self.add('paraboloid', Paraboloid())
 
         # Create CONMIN Optimizer instance
         self.add('driver', pyOptDriver())
-        
+        self.driver.pyopt_fd = True
+
         # Driver process definition
         self.driver.workflow.add('paraboloid')
-        
-        # CONMIN Objective 
+
+        # CONMIN Objective
         self.driver.add_objective('paraboloid.f_xy')
-        
-        # CONMIN Design Variables 
+
+        # CONMIN Design Variables
         self.driver.add_parameter('paraboloid.x', low=-50., high=50.)
         self.driver.add_parameter('paraboloid.y', low=-50., high=50.)
-        
+
         # CONMIN Constraints
         self.driver.add_constraint('paraboloid.x-paraboloid.y >= 15.0')
-        
+
         self.driver.print_results = False
-        
+
+
+class ArrayParaboloid(Component):
+    """ Evaluates the equation f(x) = (x[0]-3)^2 + x[0]x[1] + (x[1]+4)^2 - 3 """
+
+    # pylint: disable-msg=E1101
+    x = Array([0., 0.], iotype='in', desc='The variable x')
+    f_xy = Float(iotype='out', desc='F(x,y)')
+
+    def execute(self):
+        """Optimal solution (minimum): x = [6.6667,-7.3333]"""
+        x = self.x
+        self.f_xy = (x[0]-3.0)**2 + x[0]*x[1] + (x[1]+4.0)**2 - 3.0
+
+
+class ArrayOpt(Assembly):
+    """Constrained optimization of the ArrayParaboloid with CONMIN."""
+
+    def configure(self):
+        """ Creates a new Assembly containing ArrayParaboloid and an optimizer"""
+
+        # pylint: disable-msg=E1101
+
+        self.add('paraboloid', ArrayParaboloid())
+        self.add('driver', pyOptDriver())
+        self.driver.pyopt_fd = True
+        self.driver.workflow.add('paraboloid')
+        self.driver.add_objective('paraboloid.f_xy')
+        self.driver.add_parameter('paraboloid.x', low=-50., high=50.)
+        self.driver.add_constraint('paraboloid.x[0]-paraboloid.x[1] >= 15.0')
+        self.driver.print_results = False
+
+
 class OptimizationConstrainedDerivatives(Assembly):
     """Constrained optimization of the Paraboloid with CONMIN."""
-    
+
     def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
-        
+
         # pylint: disable-msg=E1101
-        
+
         # Create Paraboloid component instances
         self.add('paraboloid', ParaboloidDerivative())
 
         # Create CONMIN Optimizer instance
         self.add('driver', pyOptDriver())
-        
+
         # Driver process definition
         self.driver.workflow.add('paraboloid')
-        
-        # CONMIN Objective 
+
+        # CONMIN Objective
         self.driver.add_objective('paraboloid.f_xy')
-        
-        # CONMIN Design Variables 
+
+        # CONMIN Design Variables
         self.driver.add_parameter('paraboloid.x', low=-50., high=50.)
         self.driver.add_parameter('paraboloid.y', low=-50., high=50.)
-        
+
         # CONMIN Constraints
         self.driver.add_constraint('paraboloid.x-paraboloid.y >= 15.0')
-        
-        self.driver.print_results = False
-        
-        self.driver.differentiator = FiniteDifference()
 
-        
+        self.driver.print_results = False
+
+
 class MultiFunction(Component):
     #Finds the minimum f(1) = x[1]
     #              and f(2) = (1+x[2])/x[1]
-        
-    # set up interface to the framework  
+
+    # set up interface to the framework
     # pylint: disable-msg=E1101
     x1 = Float(1.0, iotype='in', desc='The variable x1')
     x2 = Float(1.0, iotype='in', desc='The variable x2')
@@ -93,18 +122,19 @@ class MultiFunction(Component):
 
     g1_x = Float(iotype='out', desc='g1(x1,x2)')
     g2_x = Float(iotype='out', desc='g2(x1,x2)')
-        
+
     def execute(self):
-        
+
         x1 = self.x1
         x2 = self.x2
-        
+
         self.f1_x = x1
         self.f2_x = (1+x2)/x1
- 
+
         self.g1_x =  x2+9.0*x1
         self.g2_x = -x2+9.0*x1
-        
+
+
 class MultiObjectiveOptimization(Assembly):
     """Multi Objective optimization of the  with NSGA2."""
 
@@ -118,6 +148,7 @@ class MultiObjectiveOptimization(Assembly):
 
         # Create NSGA2 Optimizer instance
         self.add('driver', pyOptDriver())
+        self.driver.pyopt_fd = True
 
         # Driver process definition
         self.driver.workflow.add('multifunction')
@@ -135,74 +166,101 @@ class MultiObjectiveOptimization(Assembly):
         # NSGA2 Constraints
         self.driver.add_constraint('multifunction.g1_x  >= 6.0')
         self.driver.add_constraint('multifunction.g2_x  >= 1.0')
-        
-        
+
+
 class pyOptDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
-        
+
     def tearDown(self):
         self.top = None
-        
+
     def test_basic_CONMIN(self):
-        
-        
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
-            raise SkipTest("this test requires pyOpt to be installed")  
-        
+            raise SkipTest("this test requires pyOpt to be installed")
+
         self.top = OptimizationConstrained()
         set_as_top(self.top)
-        
+
         try:
             self.top.driver.optimizer = 'CONMIN'
         except ValueError:
             raise SkipTest("CONMIN not present on this system")
-            
-        self.top.driver.title='Little Test'
+
+        self.top.driver.title = 'Little Test'
         optdict = {}
         self.top.driver.options = optdict
 
         self.top.run()
-        
+
         assert_rel_error(self, self.top.paraboloid.x, 7.175775, 0.01)
         assert_rel_error(self, self.top.paraboloid.y, -7.824225, 0.01)
+
+    def test_array_CONMIN(self):
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")
+
+        self.top = ArrayOpt()
+        set_as_top(self.top)
+
+        try:
+            self.top.driver.optimizer = 'CONMIN'
+        except ValueError:
+            raise SkipTest("CONMIN not present on this system")
+
+        self.top.driver.title = 'Little Test'
+        optdict = {}
+        self.top.driver.options = optdict
+
+        self.top.run()  # Run with pyopt finite differencing.
+
+        assert_rel_error(self, self.top.paraboloid.x[0], 7.175775, 0.01)
+        assert_rel_error(self, self.top.paraboloid.x[1], -7.824225, 0.01)
+
+        # Re-run with OpenMDAO derivatives.
+#        self.top.paraboloid.x = [0., 0.]
+#        self.top.driver.pyopt_fd = False
+#        self.top.run()
+#        assert_rel_error(self, self.top.paraboloid.x[0], 7.175775, 0.01)
+#        assert_rel_error(self, self.top.paraboloid.x[1], -7.824225, 0.01)
 
     def test_basic_CONMIN_derivatives(self):
-        
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
-            raise SkipTest("this test requires pyOpt to be installed")  
-        
+            raise SkipTest("this test requires pyOpt to be installed")
+
         self.top = OptimizationConstrainedDerivatives()
         set_as_top(self.top)
-        
+
         try:
             self.top.driver.optimizer = 'CONMIN'
         except ValueError:
             raise SkipTest("CONMIN not present on this system")
-        
-        self.top.driver.title='Little Test with Gradient'
+
+        self.top.driver.title = 'Little Test with Gradient'
         optdict = {}
         self.top.driver.options = optdict
 
         self.top.run()
-        
+
         assert_rel_error(self, self.top.paraboloid.x, 7.175775, 0.01)
         assert_rel_error(self, self.top.paraboloid.y, -7.824225, 0.01)
-        
+
     def test_GA_multi_obj_multi_con(self):
-        # Note, just verifying that things work functionally, rather than run this
-        # for many generations.
-        
+        # Note, just verifying that things work functionally, rather than run
+        # this for many generations.
+
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
-            raise SkipTest("this test requires pyOpt to be installed")  
-        
+            raise SkipTest("this test requires pyOpt to be installed")
+
         self.top = MultiObjectiveOptimization()
         set_as_top(self.top)
 
@@ -210,12 +268,12 @@ class pyOptDriverTestCase(unittest.TestCase):
             self.top.driver.optimizer = 'NSGA2'
         except ValueError:
             raise SkipTest("NSGA2 not present on this system")
-        
+
         # PyOpt Flags
-        self.top.driver.title='Two-Objective Fitness MultiFunction Test'
+        self.top.driver.title = 'Two-Objective Fitness MultiFunction Test'
         optdict = {}
         optdict['PopSize'] = 100     #   a multiple of 4
-        optdict['maxGen'] = 5  
+        optdict['maxGen'] = 5
         optdict['pCross_real'] = 0.6 #prob of crossover of design variables in range (0.6-1.0)
         optdict['pMut_real'] = 0.5   #prob of mutation of (1/design varaibles)
         optdict['eta_c'] = 10.0      #distribution index for crossover in range (5 - 20)
@@ -226,11 +284,10 @@ class pyOptDriverTestCase(unittest.TestCase):
         optdict['seed'] = 0.0        #random seed number (0-autoseed based on time clock)
 
         self.top.driver.options = optdict
-        
+
         self.top.run()
-        
-        
-        
+
+
 if __name__ == "__main__":
     runmodule()
-    
+
