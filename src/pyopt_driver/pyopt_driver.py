@@ -100,8 +100,8 @@ class pyOptDriver(Driver):
                 elif isinstance(val, (float, float32, float64)):
                     vartype = 'c'
                 else:
-                    msg = 'Only continuous, discrete, or enumerated variables ' \
-                          'are supported. %s is %s.' % (name, type(val))
+                    msg = 'Only continuous, discrete, or enumerated variables' \
+                          ' are supported. %s is %s.' % (name, type(val))
                     self.raise_exception(msg, ValueError)
 
                 opt_prob.addVar(name, vartype,
@@ -249,10 +249,8 @@ class pyOptDriver(Driver):
 
         try:
             inputs = self.list_param_group_targets()
-            obj = ["%s.out0" % item.pcomp_name for item in
-                   self.get_objectives().values()]
-            con = ["%s.out0" % item.pcomp_name for item in
-                   self.get_constraints().values()]
+            obj = self.list_objective_targets()
+            con = self.list_constraint_targets()
 
             J = self.workflow.calc_gradient(inputs, obj + con)
 
