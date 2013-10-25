@@ -1,8 +1,9 @@
-
 import unittest
 
 # pylint: disable-msg=E0611,F0401
-from nose import SkipTest, runmodule
+import numpy
+import math
+from nose import SkipTest
 
 try:
     from pyopt_driver.pyopt_driver import pyOptDriver
@@ -11,7 +12,7 @@ except ImportError:
 
 from openmdao.util.testutil import assert_rel_error
 from openmdao.main.api import Assembly, set_as_top, Component
-from openmdao.main.datatypes.api import Array, Float
+from openmdao.main.datatypes.api import Array, Float, Int
 from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 
@@ -29,7 +30,6 @@ class OptimizationConstrained(Assembly):
 
         # Create CONMIN Optimizer instance
         self.add('driver', pyOptDriver())
-        self.driver.pyopt_fd = True
 
         # Driver process definition
         self.driver.workflow.add('paraboloid')
@@ -70,7 +70,7 @@ class ArrayOpt(Assembly):
 
         self.add('paraboloid', ArrayParaboloid())
         self.add('driver', pyOptDriver())
-        self.driver.pyopt_fd = True
+        self.driver.pyopt_diff = True
         self.driver.workflow.add('paraboloid')
         self.driver.add_objective('paraboloid.f_xy')
         self.driver.add_parameter('paraboloid.x', low=-50., high=50.)
@@ -148,7 +148,6 @@ class MultiObjectiveOptimization(Assembly):
 
         # Create NSGA2 Optimizer instance
         self.add('driver', pyOptDriver())
-        self.driver.pyopt_fd = True
 
         # Driver process definition
         self.driver.workflow.add('multifunction')
@@ -168,6 +167,87 @@ class MultiObjectiveOptimization(Assembly):
         self.driver.add_constraint('multifunction.g2_x  >= 1.0')
 
 
+class BenchMark(Component):
+
+    # set up interface to the framework
+    # pylint: disable-msg=E1101
+
+    x1  = Int(10, iotype='in', desc='The variable x1')
+    x2  = Int(10, iotype='in', desc='The variable x2')
+    x3  = Int(10, iotype='in', desc='The variable x2')
+
+    f_x = Float(iotype='out', desc='f(x)')
+
+    g1_x = Float(iotype='out', desc='g(x)')
+    h1_x = Float(iotype='out', desc='h(x)')
+
+    def execute(self):
+
+        x1 = self.x1
+        x2 = self.x2
+        x3 = self.x3
+
+        #print "WAHHHH: ", self.x1
+
+        self.f_x = -x1*x2*x3
+
+        self.g1_x = x1 + 2.*x2 + 2.*x3 - 72.0
+        self.h1_x = -x1 - 2.*x2 - 2.*x3
+
+
+class BenchMarkOptimization(Assembly):
+    """Benchmark Problem Objective optimization with ALPSO."""
+
+    def __init__(self):
+        """Creates a new Assembly containing a MultiFunction and an optimizer"""
+
+        # pylint: disable-msg=E1101
+
+        super(BenchMarkOptimization, self).__init__()
+
+        # Create MultiFunction component instances
+        self.add('benchmark', BenchMark())
+
+        # Create ALPSO Optimizer instance
+        self.add('driver', pyOptDriver())
+
+        # Driver process definition
+        self.driver.workflow.add('benchmark')
+
+        # PyOpt Flags
+        self.driver.optimizer = 'ALPSO'
+        self.driver.title='Bench mark problem 4 - Unconstrained'
+        optdict = {}
+        optdict['SwarmSize'] = 40
+        optdict['maxOuterIter'] = 100
+        optdict['maxInnerIter'] = 3
+        optdict['minInnerIter'] = 3
+        optdict['etol'] = 1e-4
+        optdict['itol'] = 1e-4
+        optdict['c1'] = 0.8
+        optdict['c2'] = 0.8
+        optdict['w1'] = 0.9
+        optdict['nf'] = 5
+        optdict['dt'] = 1.0
+        optdict['vcrazy'] = 1e-4
+        optdict['Scaling'] = 1
+        optdict['seed'] = 1.0
+
+        self.driver.options = optdict
+
+        # ALPSO Objective
+        self.driver.add_objective('benchmark.f_x')
+
+        # ALPSO Design Variables
+        self.driver.add_parameter('benchmark.x1', low= 0, high=42)
+        self.driver.add_parameter('benchmark.x2', low= 0, high=42)
+        self.driver.add_parameter('benchmark.x3', low= 0, high=42)
+
+        # ALPSO Constraints
+        self.driver.add_constraint('benchmark.g1_x <= 0.0')
+        self.driver.add_constraint('benchmark.h1_x <= 0.0')
+
+
 class pyOptDriverTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -177,6 +257,7 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.top = None
 
     def test_basic_CONMIN(self):
+
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
@@ -193,6 +274,7 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.top.driver.title = 'Little Test'
         optdict = {}
         self.top.driver.options = optdict
+        self.top.driver.pyopt_diff = True
 
         self.top.run()
 
@@ -200,6 +282,7 @@ class pyOptDriverTestCase(unittest.TestCase):
         assert_rel_error(self, self.top.paraboloid.y, -7.824225, 0.01)
 
     def test_array_CONMIN(self):
+
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
@@ -224,12 +307,13 @@ class pyOptDriverTestCase(unittest.TestCase):
 
         # Re-run with OpenMDAO derivatives.
 #        self.top.paraboloid.x = [0., 0.]
-#        self.top.driver.pyopt_fd = False
+#        self.top.driver.pyopt_diff = False
 #        self.top.run()
 #        assert_rel_error(self, self.top.paraboloid.x[0], 7.175775, 0.01)
 #        assert_rel_error(self, self.top.paraboloid.x[1], -7.824225, 0.01)
 
     def test_basic_CONMIN_derivatives(self):
+
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
         except ImportError:
@@ -287,7 +371,35 @@ class pyOptDriverTestCase(unittest.TestCase):
 
         self.top.run()
 
+    def test_ALPSO_integer_design_var(self):
+
+        #    probNEW.py
+        #
+        #Set's up component for Schittkowski's TP37 Problem.
+        #
+        #    min 	-x1*x2*x3
+        #    s.t.:	x1 + 2.*x2 + 2.*x3 - 72 <= 0
+        #            - x1 - 2.*x2 - 2.*x3 <= 0
+        #            0 <= xi <= 42,  i = 1,2,3
+        #
+        #    f* = -3456 , x* = [24, 12, 12]
+        #
+        # *Problem taken from pyOpt example tp037
+
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")
+
+        opt_problem = BenchMarkOptimization()
+        set_as_top(opt_problem)
+        opt_problem.run()
+
+        self.assertEqual(opt_problem.benchmark.x1, 24)
+        self.assertEqual(opt_problem.benchmark.x2, 12)
+        self.assertEqual(opt_problem.benchmark.x3, 12)
+
 
 if __name__ == "__main__":
-    runmodule()
+    unittest.main()
 

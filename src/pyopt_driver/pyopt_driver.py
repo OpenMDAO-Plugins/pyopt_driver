@@ -46,15 +46,14 @@ class pyOptDriver(Driver):
 
     optimizer = Enum('ALPSO', _check_imports(), iotype='in',
                      desc='Name of optimizers to use')
-    pyopt_fd = Bool(False, iotype='in',
-                    desc='Set True to use pyopt finite differencing,'
-                         ' default is to use OpenMDAO differentiation.')
     title = Str('Optimization using pyOpt', iotype='in',
                 desc='Title of this optimization run')
     options = Dict(iotype='in',
                    desc='Dictionary of optimization parameters')
     print_results = Bool(True, iotype='in',
                          desc='Print pyOpt results if True')
+    pyopt_diff = Bool(False, iotype='in',
+                      desc='Set to True to let pyOpt calculate the gradient')
 
     def __init__(self):
         """Initialize pyopt - not much needed."""
@@ -62,6 +61,7 @@ class pyOptDriver(Driver):
         super(pyOptDriver, self).__init__()
 
         self.pyOpt_solution = None
+        self.param_type = {}
 
     def execute(self):
         """pyOpt execution. Note that pyOpt controls the execution, and the
@@ -73,41 +73,40 @@ class pyOptDriver(Driver):
                                 obj_set={}, con_set={})
 
         # Add all parameters
+        self.param_type = {}
         for name, param in self.get_parameters().iteritems():
 
             # We need to identify Enums, Lists, Dicts
             metadata = param.get_metadata()[0][1]
             values = param.evaluate()
+
+            # Assuming uniform enumerated, discrete, or continuous for now.
+            val = values[0]
+            choices = []
+            if ('values' in metadata and \
+               isinstance(metadata['values'], (list, tuple, array, set))):
+                vartype = 'd'
+                choices = metadata['values']
+            elif isinstance(val, bool):
+                vartype = 'd'
+                choices = [True, False]
+            elif isinstance(val, (int, int32, int64)):
+                vartype = 'i'
+            elif isinstance(val, (float, float32, float64)):
+                vartype = 'c'
+            else:
+                msg = 'Only continuous, discrete, or enumerated variables' \
+                      ' are supported. %s is %s.' % (name, type(val))
+                self.raise_exception(msg, ValueError)
+            self.param_type[name] = vartype
+
+            names = param.names
             lower_bounds = param.get_low()
             upper_bounds = param.get_high()
-
             for i in range(param.size):
-                if param.size > 1:
-                    name = '%s_%s' % (name, i)
-                val = values[i]
-
-                # enumerated, discrete or continuous
-                choices = []
-                if ('values' in metadata and \
-                   isinstance(metadata['values'], (list, tuple, array, set))):
-                    vartype = 'd'
-                    choices = metadata['values']
-                elif isinstance(val, bool):
-                    vartype = 'd'
-                    choices = [True, False]
-                elif isinstance(val, (int, int32, int64)):
-                    vartype = 'i'
-                elif isinstance(val, (float, float32, float64)):
-                    vartype = 'c'
-                else:
-                    msg = 'Only continuous, discrete, or enumerated variables' \
-                          ' are supported. %s is %s.' % (name, type(val))
-                    self.raise_exception(msg, ValueError)
-
-                opt_prob.addVar(name, vartype,
+                opt_prob.addVar(names[i], vartype,
                                 lower=lower_bounds[i], upper=upper_bounds[i],
-                                value=val, choices=choices)
-
+                                value=values[i], choices=choices)
         # Add all objectives
         for name in self.get_objectives():
             opt_prob.addObj(name)
@@ -137,7 +136,7 @@ class pyOptDriver(Driver):
             opt.setOption(option, value)
 
         # Execute the optimization problem
-        if self.pyopt_fd:
+        if self.pyopt_diff:
             # Use pyOpt's internal finite difference
             opt(opt_prob, sens_type='FD')
         else:
@@ -153,8 +152,17 @@ class pyOptDriver(Driver):
         dvals = []
         for i in range(0, len(opt_prob.solution(0)._variables)):
             dvals.append(opt_prob.solution(0)._variables[i].value)
+
+        # Integer parameters come back as floats, so we need to round them
+        # and turn them into python integers before setting.
+        if 'i' in self.param_type.values():
+            for j, param in enumerate(self.get_parameters().keys()):
+                if self.param_type[param] == 'i':
+                    dvals[j] = int(round(dvals[j]))
+
         self.set_parameters(dvals)
         self.run_iteration()
+        self.record_case()
 
         # Save the most recent solution.
         self.pyOpt_solution = opt_prob.solution(0)
@@ -182,16 +190,31 @@ class pyOptDriver(Driver):
             1 for unsuccessful function evaluation
         """
 
-        f = zeros(0)
-        g = zeros(0)
         fail = 1
+        f = []
+        g = []
 
         try:
 
-            # Note: Sometimes pyOpt sends us an x array that is larger than the
-            # number of parameters. In the pyOpt examples, they just take the
-            # first n entries as the parameters, so we do too.
-            self.set_parameters(x[0:self.total_parameters()])
+            # Note: Sometimes pyOpt sends us an x array that is larger than
+            # the number of parameters. In the pyOpt examples, they just take
+            # the first n entries as the parameters, so we do too.
+            nparam = self.total_parameters()
+
+            # Integer parameters come back as floats, so we need to round them
+            # and turn them into python integers before setting.
+            param_types = self.param_type
+            if 'i' in param_types.values():
+                j = 0
+                for name, param in self.get_parameters().iteritems():
+                    size = param.size
+                    if param_types[name] == 'i':
+                        self.set_parameter_by_name(name, int(round(x[j:j+size])))
+                    else:
+                        self.set_parameter_by_name(name, x[j:j+size])
+                    j += size
+            else:
+                self.set_parameters(x[0:nparam])
 
             # Execute the model
             self.run_iteration()
@@ -202,6 +225,12 @@ class pyOptDriver(Driver):
             # Get the constraint evaluations
             g = array(self.eval_constraints(self.parent))
 
+            # Print out cases whenever the objective function is evaluated.
+            # TODO: pyOpt's History object might be better suited, though
+            # it does not seem to be part of the Optimization object at
+            # present.
+            self.record_case()
+
             fail = 0
 
         except Exception as msg:
@@ -209,6 +238,10 @@ class pyOptDriver(Driver):
             # Exceptions seem to be swallowed by the C code, so this
             # should give the user more info than the dreaded "segfault"
             print "Exception: %s" % str(msg)
+            print 70*"="
+            import traceback
+            traceback.print_exc()
+            print 70*"="
 
         return f, g, fail
 
@@ -243,9 +276,9 @@ class pyOptDriver(Driver):
             1 for unsuccessful function evaluation
         """
 
-        df = zeros(0)
-        dg = zeros(0)
         fail = 1
+        df = []
+        dg = []
 
         try:
             inputs = self.list_param_group_targets()
@@ -265,6 +298,10 @@ class pyOptDriver(Driver):
             # Exceptions seem to be swallowed by the C code, so this
             # should give the user more info than the dreaded "segfault"
             print "Exception: %s" % str(msg)
+            print 70*"="
+            import traceback
+            traceback.print_exc()
+            print 70*"="
 
         return df, dg, fail
 
