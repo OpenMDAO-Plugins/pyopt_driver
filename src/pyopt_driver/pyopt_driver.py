@@ -10,14 +10,15 @@ from numpy import array, float32, float64, int32, int64, zeros
 
 from pyOpt import Optimization
 
-from openmdao.lib.datatypes.api import Bool, Dict, Enum, Str
 from openmdao.main.api import Driver
+from openmdao.main.datatypes.api import Bool, Dict, Enum, Str
 from openmdao.main.interfaces import IHasParameters, IHasConstraints, \
                                      IHasObjective, implements, IOptimizer
 from openmdao.main.hasparameters import HasParameters
 from openmdao.main.hasconstraints import HasConstraints
 from openmdao.main.hasobjective import HasObjectives
 from openmdao.util.decorators import add_delegate
+
 
 def _check_imports():
     """ Dynamically remove optimizers we don't have
@@ -35,6 +36,7 @@ def _check_imports():
 
     return optlist
 
+
 @add_delegate(HasParameters, HasConstraints, HasObjectives)
 class pyOptDriver(Driver):
     """ Driver wrapper for pyOpt.
@@ -43,15 +45,15 @@ class pyOptDriver(Driver):
     implements(IHasParameters, IHasConstraints, IHasObjective, IOptimizer)
 
     optimizer = Enum('ALPSO', _check_imports(), iotype='in',
-                       desc='Name of optimizers to use')
+                     desc='Name of optimizers to use')
     title = Str('Optimization using pyOpt', iotype='in',
                 desc='Title of this optimization run')
     options = Dict(iotype='in',
                    desc='Dictionary of optimization parameters')
-    print_results = Bool(True, iotype = 'in',
+    print_results = Bool(True, iotype='in',
                          desc='Print pyOpt results if True')
-    pyopt_diff = Bool(False, iotype='in', desc='Set to True to let pyOpt'
-                       'calculate the gradient.')
+    pyopt_diff = Bool(False, iotype='in',
+                      desc='Set to True to let pyOpt calculate the gradient')
 
     def __init__(self):
         """Initialize pyopt - not much needed."""
@@ -74,15 +76,15 @@ class pyOptDriver(Driver):
         self.param_type = {}
         for name, param in self.get_parameters().iteritems():
 
-            val = param.evaluate()
-
             # We need to identify Enums, Lists, Dicts
             metadata = param.get_metadata()[0][1]
+            values = param.evaluate()
 
-            # enumerated, discrete or continuous
+            # Assuming uniform enumerated, discrete, or continuous for now.
+            val = values[0]
             choices = []
             if ('values' in metadata and \
-               isinstance(metadata['values'],(list, tuple, array, set))):
+               isinstance(metadata['values'], (list, tuple, array, set))):
                 vartype = 'd'
                 choices = metadata['values']
             elif isinstance(val, bool):
@@ -93,24 +95,28 @@ class pyOptDriver(Driver):
             elif isinstance(val, (float, float32, float64)):
                 vartype = 'c'
             else:
-                msg = 'Only continuous, descrete, or enumerated variables ' + \
-                      'are supported. %s is %s.' % (name, type(val))
+                msg = 'Only continuous, discrete, or enumerated variables' \
+                      ' are supported. %s is %s.' % (name, type(val))
                 self.raise_exception(msg, ValueError)
-
-            opt_prob.addVar(name, vartype, lower=param.low, upper=param.high,
-                            value=val, choices=choices)
             self.param_type[name] = vartype
 
+            names = param.names
+            lower_bounds = param.get_low()
+            upper_bounds = param.get_high()
+            for i in range(param.size):
+                opt_prob.addVar(names[i], vartype,
+                                lower=lower_bounds[i], upper=upper_bounds[i],
+                                value=values[i], choices=choices)
         # Add all objectives
-        for name in self.get_objectives().keys():
+        for name in self.get_objectives():
             opt_prob.addObj(name)
 
         # Add all equality constraints
-        for name in self.get_eq_constraints().keys():
+        for name in self.get_eq_constraints():
             opt_prob.addCon(name, type='e')
 
         # Add all inequality constraints
-        for name in self.get_ineq_constraints().keys():
+        for name in self.get_ineq_constraints():
             opt_prob.addCon(name, type='i')
 
         # Instantiate the requested optimizer
@@ -193,38 +199,31 @@ class pyOptDriver(Driver):
             # Note: Sometimes pyOpt sends us an x array that is larger than
             # the number of parameters. In the pyOpt examples, they just take
             # the first n entries as the parameters, so we do too.
-            nparam = len(self.param_type)
+            nparam = self.total_parameters()
 
             # Integer parameters come back as floats, so we need to round them
             # and turn them into python integers before setting.
-            if 'i' in self.param_type.values():
-                for j, param in enumerate(self.get_parameters().keys()):
-                    if self.param_type[param] == 'i':
-                        self.set_parameter_by_name(param, int(round(x[j])))
+            param_types = self.param_type
+            if 'i' in param_types.values():
+                j = 0
+                for name, param in self.get_parameters().iteritems():
+                    size = param.size
+                    if param_types[name] == 'i':
+                        self.set_parameter_by_name(name, int(round(x[j:j+size])))
                     else:
-                        self.set_parameter_by_name(param, x[j])
+                        self.set_parameter_by_name(name, x[j:j+size])
+                    j += size
             else:
-                self.set_parameters([val for val in x[0:nparam]])
+                self.set_parameters(x[0:nparam])
 
             # Execute the model
             self.run_iteration()
 
             # Get the objective function evaluations
-            for obj in self.eval_objectives():
-                f.append(obj)
+            f = array(self.eval_objectives())
 
-            f = array(f)
-
-            # Constraints. Note that SLSQP defines positive as satisfied.
-            con_list = []
-            if len(self.get_eq_constraints()) > 0 :
-                con_list.extend([v.evaluate(self.parent) for \
-                                v in self.get_eq_constraints().values()])
-            if len(self.get_ineq_constraints()) > 0 :
-                con_list.extend([v.evaluate(self.parent) for \
-                                v in self.get_ineq_constraints().values()])
-
-            g = array(con_list)
+            # Get the constraint evaluations
+            g = array(self.eval_constraints(self.parent))
 
             # Print out cases whenever the objective function is evaluated.
             # TODO: pyOpt's History object might be better suited, though
@@ -232,7 +231,9 @@ class pyOptDriver(Driver):
             # present.
             self.record_case()
 
-        except Exception, msg:
+            fail = 0
+
+        except Exception as msg:
 
             # Exceptions seem to be swallowed by the C code, so this
             # should give the user more info than the dreaded "segfault"
@@ -241,10 +242,6 @@ class pyOptDriver(Driver):
             import traceback
             traceback.print_exc()
             print 70*"="
-
-            return f, g, fail
-
-        fail = 0
 
         return f, g, fail
 
@@ -285,30 +282,18 @@ class pyOptDriver(Driver):
 
         try:
             inputs = self.list_param_group_targets()
-            obj = ["%s.out0" % item.pcomp_name for item in \
-                   self.get_objectives().values()]
-            econ = ["%s.out0" % item.pcomp_name for item in \
-                    self.get_eq_constraints().values()]
-            icon = ["%s.out0" % item.pcomp_name for item in \
-                    self.get_ineq_constraints().values()]
+            obj = self.list_objective_targets()
+            con = self.list_constraint_targets()
 
-            J = self.workflow.calc_gradient(inputs, obj + econ + icon)
+            J = self.workflow.calc_gradient(inputs, obj + con)
 
             nobj = len(obj)
-            ncon = len(econ) + len(icon)
-            nparam = len(inputs)
-
-            df = zeros([nobj, nparam])
-            dg = zeros([ncon, nparam])
-
             df = J[0:nobj, :]
+            dg = J[nobj:, :]
 
-            n1 = nobj
-            n2 = nobj + ncon
-            if ncon > 0:
-                dg = J[n1:n2, :]
+            fail = 0
 
-        except Exception, msg:
+        except Exception as msg:
 
             # Exceptions seem to be swallowed by the C code, so this
             # should give the user more info than the dreaded "segfault"
@@ -317,10 +302,6 @@ class pyOptDriver(Driver):
             import traceback
             traceback.print_exc()
             print 70*"="
-
-            return df, dg, fail
-
-        fail = 0
 
         return df, dg, fail
 
