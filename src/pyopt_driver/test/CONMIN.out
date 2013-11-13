@@ -57,7 +57,7 @@
        1)    0.74584E+01 -0.75416E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.35527E-14
+       1)   -0.53291E-14
 
 
 
@@ -76,7 +76,7 @@
      ITER =    3     OBJ =  -0.27073E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.72254E+01 -0.77746E+01
+       1)    0.72261E+01 -0.77739E+01
 
      CONSTRAINT VALUES (G-VECTOR)
        1)    0.00000E+00
@@ -87,10 +87,10 @@
      ITER =    4     OBJ =  -0.27076E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.72006E+01 -0.78097E+01
+       1)    0.72011E+01 -0.78094E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.10223E-01
+       1)   -0.10491E-01
 
 
 
@@ -98,21 +98,21 @@
      ITER =    5     OBJ =  -0.27076E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71858E+01 -0.78269E+01
+       1)    0.71860E+01 -0.78269E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12637E-01
+       1)   -0.12969E-01
 
 
 
 
-     ITER =    6     OBJ =  -0.27077E+02
+     ITER =    6     OBJ =  -0.27076E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71788E+01 -0.78343E+01
+       1)    0.71790E+01 -0.78345E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.13107E-01
+       1)   -0.13450E-01
 
 
 
@@ -120,10 +120,10 @@
      ITER =    7     OBJ =  -0.27077E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71757E+01 -0.78374E+01
+       1)    0.71759E+01 -0.78377E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.13192E-01
+       1)   -0.13537E-01
 
 
 
@@ -131,10 +131,10 @@
      ITER =    8     OBJ =  -0.27077E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71745E+01 -0.78387E+01
+       1)    0.71745E+01 -0.78390E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.13205E-01
+       1)   -0.13553E-01
 
 
 
@@ -142,23 +142,23 @@
      ITER =    9     OBJ =  -0.27077E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71749E+01 -0.78383E+01
+       1)    0.71738E+01 -0.78397E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.13206E-01
+       1)   -0.13553E-01
 1
 
 
 
     FINAL OPTIMIZATION INFORMATION
 
-     OBJ =  -0.270767E+02
+     OBJ =  -0.270765E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71749E+01 -0.78383E+01
+       1)    0.71738E+01 -0.78397E+01
 
      CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.13206E-01
+       1)   -0.13553E-01
 
      THERE ARE    1 ACTIVE CONSTRAINTS
      CONSTRAINT NUMBERS ARE
