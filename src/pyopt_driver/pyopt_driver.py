@@ -62,6 +62,11 @@ class pyOptDriver(Driver):
 
         self.pyOpt_solution = None
         self.param_type = {}
+        self.nparam = None
+
+        self.inputs = None
+        self.objs = None
+        self.cons = None
 
     def execute(self):
         """pyOpt execution. Note that pyOpt controls the execution, and the
@@ -74,6 +79,7 @@ class pyOptDriver(Driver):
 
         # Add all parameters
         self.param_type = {}
+        self.nparam = self.total_parameters()
         for name, param in self.get_parameters().iteritems():
 
             # We need to identify Enums, Lists, Dicts
@@ -112,12 +118,24 @@ class pyOptDriver(Driver):
             opt_prob.addObj(name)
 
         # Add all equality constraints
-        for name in self.get_eq_constraints():
-            opt_prob.addCon(name, type='e')
+        for name, con in self.get_eq_constraints().items():
+            if con.size > 1:
+                for i in range(con.size):
+                    opt_prob.addCon('%s [%s]' % (name, i), type='e')
+            else:
+                opt_prob.addCon(name, type='e')
 
         # Add all inequality constraints
-        for name in self.get_ineq_constraints():
-            opt_prob.addCon(name, type='i')
+        for name, con in self.get_ineq_constraints().items():
+            if con.size > 1:
+                for i in range(con.size):
+                    opt_prob.addCon('%s [%s]' % (name, i), type='i')
+            else:
+                opt_prob.addCon(name, type='i')
+
+        self.inputs = self.list_param_group_targets()
+        self.objs = self.list_objective_targets()
+        self.cons = self.list_constraint_targets()
 
         # Instantiate the requested optimizer
         optimizer = self.optimizer
@@ -199,7 +217,6 @@ class pyOptDriver(Driver):
             # Note: Sometimes pyOpt sends us an x array that is larger than
             # the number of parameters. In the pyOpt examples, they just take
             # the first n entries as the parameters, so we do too.
-            nparam = self.total_parameters()
 
             # Integer parameters come back as floats, so we need to round them
             # and turn them into python integers before setting.
@@ -214,7 +231,7 @@ class pyOptDriver(Driver):
                         self.set_parameter_by_name(name, x[j:j+size])
                     j += size
             else:
-                self.set_parameters(x[0:nparam])
+                self.set_parameters(x[0:self.nparam])
 
             # Execute the model
             self.run_iteration()
@@ -281,13 +298,9 @@ class pyOptDriver(Driver):
         dg = []
 
         try:
-            inputs = self.list_param_group_targets()
-            obj = self.list_objective_targets()
-            con = self.list_constraint_targets()
+            J = self.workflow.calc_gradient(self.inputs, self.objs + self.cons)
 
-            J = self.workflow.calc_gradient(inputs, obj + con)
-
-            nobj = len(obj)
+            nobj = len(self.objs)
             df = J[0:nobj, :]
             dg = J[nobj:, :]
 

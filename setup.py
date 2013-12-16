@@ -58,6 +58,7 @@ kwargs = {'author': 'Kenneth T. Moore',
                                    'sphinx_build/html/_modules/pyopt_driver/pyopt_driver.html',
                                    'sphinx_build/html/_modules/pyopt_driver/test/test_pyopt_driver.html',
                                    'test/__init__.py',
+                                   'test/test_pyoptdriver.new',
                                    'test/CONMIN.out',
                                    'test/openmdao_log.txt',
                                    'test/test_pyopt_driver.py',
@@ -65,7 +66,7 @@ kwargs = {'author': 'Kenneth T. Moore',
  'package_dir': {'': 'src'},
  'packages': ['pyopt_driver', 'pyopt_driver.test'],
  'url': 'https://github.com/OpenMDAO-Plugins/pyopt-driver',
- 'version': '0.13',
+ 'version': '0.14',
  'zip_safe': False}
 
 
