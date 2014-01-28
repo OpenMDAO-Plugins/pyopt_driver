@@ -83,7 +83,7 @@ class pyOptDriver(Driver):
         for name, param in self.get_parameters().iteritems():
 
             # We need to identify Enums, Lists, Dicts
-            metadata = param.get_metadata()[0][1]
+            metadata = param.get_metadata()[1]
             values = param.evaluate()
 
             # Assuming uniform enumerated, discrete, or continuous for now.
