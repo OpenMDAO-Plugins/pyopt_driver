@@ -74,6 +74,8 @@ class pyOptDriver(Driver):
 
         self.pyOpt_solution = None
 
+        self.run_iteration()
+
         opt_prob = Optimization(self.title, self.objfunc, var_set={},
                                 obj_set={}, con_set={})
 

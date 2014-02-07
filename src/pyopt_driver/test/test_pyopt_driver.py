@@ -11,8 +11,11 @@ except ImportError:
     pass
 
 from openmdao.util.testutil import assert_rel_error
-from openmdao.main.api import Assembly, set_as_top, Component
+from openmdao.main.api import Assembly, set_as_top, Component, Driver
 from openmdao.main.datatypes.api import Array, Float, Int
+from openmdao.main.interfaces import IHasParameters, implements
+from openmdao.main.hasparameters import HasParameters
+from openmdao.util.decorators import add_delegate
 from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 
@@ -399,6 +402,60 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.assertEqual(opt_problem.benchmark.x2, 12)
         self.assertEqual(opt_problem.benchmark.x3, 12)
 
+
+    def test_initial_run(self):
+        # Test to make sure fix that put run_iteration
+        #   at the top of the execute method is in place and working
+        class MyComp(Component):
+
+            x = Float(0.0, iotype='in', low=-10, high=10)
+            xx = Float(0.0, iotype='in', low=-10, high=10)
+            f_x = Float(iotype='out')
+            y = Float(iotype='out')
+
+            def execute(self):
+                if self.xx != 1.0:
+                    self.raise_exception("Lazy", RuntimeError)
+                self.f_x = 2.0*self.x
+                self.y = self.x
+
+        @add_delegate(HasParameters)
+        class SpecialDriver(Driver):
+
+            implements(IHasParameters)
+
+            def execute(self):
+                self.set_parameters([1.0])
+
+        top = set_as_top(Assembly())
+        top.add('comp', MyComp())
+
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")
+
+        try:
+            top.driver.optimizer = 'CONMIN'
+        except ValueError:
+            raise SkipTest("CONMIN not present on this system")
+
+        top.driver.title = 'Little Test'
+        optdict = {}
+        top.driver.options = optdict
+        top.driver.pyopt_diff = True
+
+        top.add('driver', pyOptDriver())
+        top.add('subdriver', SpecialDriver())
+        top.driver.workflow.add('subdriver')
+        top.subdriver.workflow.add('comp')
+
+        top.subdriver.add_parameter('comp.xx')
+        top.driver.add_parameter('comp.x')
+        top.driver.add_constraint('comp.y > 1.0')
+        top.driver.add_objective('comp.f_x')
+
+        top.run()
 
 if __name__ == "__main__":
     unittest.main()
