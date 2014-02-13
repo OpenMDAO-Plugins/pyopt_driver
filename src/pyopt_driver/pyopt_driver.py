@@ -28,7 +28,7 @@ def _check_imports():
                'MIDACO', 'MMA', 'MMFD', 'NLPQL', 'NSGA2', 'PSQP', 'SLSQP',
                'SNOPT', 'SOLVOPT']
 
-    for optimizer in optlist:
+    for optimizer in optlist[:]:
         try:
             exec('from pyOpt import %s' % optimizer)
         except ImportError:
