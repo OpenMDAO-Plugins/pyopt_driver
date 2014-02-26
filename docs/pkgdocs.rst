@@ -17,6 +17,7 @@ Package Metadata
 - **entry_points**:: 
 
     [openmdao.component]
+    pyopt_driver.test.test_pyopt_driver.MyComp=pyopt_driver.test.test_pyopt_driver:MyComp
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrained=pyopt_driver.test.test_pyopt_driver:OptimizationConstrained
     pyopt_driver.test.test_pyopt_driver.MultiFunction=pyopt_driver.test.test_pyopt_driver:MultiFunction
     pyopt_driver.test.test_pyopt_driver.ArrayOpt=pyopt_driver.test.test_pyopt_driver:ArrayOpt
@@ -24,11 +25,14 @@ Package Metadata
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     pyopt_driver.test.test_pyopt_driver.ArrayParaboloid=pyopt_driver.test.test_pyopt_driver:ArrayParaboloid
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrainedDerivatives=pyopt_driver.test.test_pyopt_driver:OptimizationConstrainedDerivatives
+    pyopt_driver.test.test_pyopt_driver.SpecialDriver=pyopt_driver.test.test_pyopt_driver:SpecialDriver
     pyopt_driver.test.test_pyopt_driver.BenchMark=pyopt_driver.test.test_pyopt_driver:BenchMark
     pyopt_driver.test.test_pyopt_driver.MultiObjectiveOptimization=pyopt_driver.test.test_pyopt_driver:MultiObjectiveOptimization
     [openmdao.driver]
+    pyopt_driver.test.test_pyopt_driver.SpecialDriver=pyopt_driver.test.test_pyopt_driver:SpecialDriver
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     [openmdao.container]
+    pyopt_driver.test.test_pyopt_driver.MyComp=pyopt_driver.test.test_pyopt_driver:MyComp
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrained=pyopt_driver.test.test_pyopt_driver:OptimizationConstrained
     pyopt_driver.test.test_pyopt_driver.MultiFunction=pyopt_driver.test.test_pyopt_driver:MultiFunction
     pyopt_driver.test.test_pyopt_driver.ArrayOpt=pyopt_driver.test.test_pyopt_driver:ArrayOpt
@@ -36,6 +40,7 @@ Package Metadata
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     pyopt_driver.test.test_pyopt_driver.ArrayParaboloid=pyopt_driver.test.test_pyopt_driver:ArrayParaboloid
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrainedDerivatives=pyopt_driver.test.test_pyopt_driver:OptimizationConstrainedDerivatives
+    pyopt_driver.test.test_pyopt_driver.SpecialDriver=pyopt_driver.test.test_pyopt_driver:SpecialDriver
     pyopt_driver.test.test_pyopt_driver.BenchMark=pyopt_driver.test.test_pyopt_driver:BenchMark
     pyopt_driver.test.test_pyopt_driver.MultiObjectiveOptimization=pyopt_driver.test.test_pyopt_driver:MultiObjectiveOptimization
 
@@ -62,5 +67,5 @@ Package Metadata
 
 - **summary:** OpenMDAO driver wrapper for the open-source optimization package pyOpt
 
-- **version:** 0.15
+- **version:** 0.16
 
