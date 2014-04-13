@@ -158,7 +158,7 @@ class pyOptDriver(Driver):
         # Execute the optimization problem
         if self.pyopt_diff:
             # Use pyOpt's internal finite difference
-            opt(opt_prob, sens_type='FD')
+            opt(opt_prob, sens_type='FD', sens_step=self.gradient_options.fd_step)
         else:
             # Use OpenMDAO's differentiator for the gradient
             opt(opt_prob, sens_type=self.gradfunc)
