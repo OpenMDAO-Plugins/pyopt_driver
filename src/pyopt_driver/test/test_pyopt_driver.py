@@ -1,8 +1,6 @@
 import unittest
 
-# pylint: disable-msg=E0611,F0401
-import numpy
-import math
+# pylint: disable=E0611,F0401
 from nose import SkipTest
 
 try:
@@ -26,7 +24,7 @@ class OptimizationConstrained(Assembly):
     def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
 
         # Create Paraboloid component instances
         self.add('paraboloid', Paraboloid())
@@ -53,7 +51,7 @@ class OptimizationConstrained(Assembly):
 class ArrayParaboloid(Component):
     """ Evaluates the equation f(x) = (x[0]-3)^2 + x[0]x[1] + (x[1]+4)^2 - 3 """
 
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     x = Array([0., 0.], iotype='in', desc='The variable x')
     f_xy = Float(iotype='out', desc='F(x,y)')
 
@@ -69,7 +67,7 @@ class ArrayOpt(Assembly):
     def configure(self):
         """ Creates a new Assembly containing ArrayParaboloid and an optimizer"""
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
 
         self.add('paraboloid', ArrayParaboloid())
         self.add('driver', pyOptDriver())
@@ -87,7 +85,7 @@ class OptimizationConstrainedDerivatives(Assembly):
     def configure(self):
         """ Creates a new Assembly containing a Paraboloid and an optimizer"""
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
 
         # Create Paraboloid component instances
         self.add('paraboloid', ParaboloidDerivative())
@@ -116,7 +114,7 @@ class MultiFunction(Component):
     #              and f(2) = (1+x[2])/x[1]
 
     # set up interface to the framework
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     x1 = Float(1.0, iotype='in', desc='The variable x1')
     x2 = Float(1.0, iotype='in', desc='The variable x2')
 
@@ -144,7 +142,7 @@ class MultiObjectiveOptimization(Assembly):
     def configure(self):
         """ Creates a new Assembly containing a MultiFunction and an optimizer"""
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
 
         # Create MultiFunction component instances
         self.add('multifunction', MultiFunction())
@@ -162,22 +160,22 @@ class MultiObjectiveOptimization(Assembly):
         self.driver.add_objective('multifunction.f2_x')
 
         # NSGA2 Design Variable
-        self.driver.add_parameter('multifunction.x1', low= 0.1, high=1.0)
-        self.driver.add_parameter('multifunction.x2', low= 0.0, high=5.0)
+        self.driver.add_parameter('multifunction.x1', low=0.1, high=1.0)
+        self.driver.add_parameter('multifunction.x2', low=0.0, high=5.0)
 
         # NSGA2 Constraints
-        self.driver.add_constraint('multifunction.g1_x  >= 6.0')
-        self.driver.add_constraint('multifunction.g2_x  >= 1.0')
+        self.driver.add_constraint('multifunction.g1_x >= 6.0')
+        self.driver.add_constraint('multifunction.g2_x >= 1.0')
 
 
 class BenchMark(Component):
 
     # set up interface to the framework
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
 
-    x1  = Int(10, iotype='in', desc='The variable x1')
-    x2  = Int(10, iotype='in', desc='The variable x2')
-    x3  = Int(10, iotype='in', desc='The variable x2')
+    x1 = Int(10, iotype='in', desc='The variable x1')
+    x2 = Int(10, iotype='in', desc='The variable x2')
+    x3 = Int(10, iotype='in', desc='The variable x2')
 
     f_x = Float(iotype='out', desc='f(x)')
 
@@ -204,7 +202,7 @@ class BenchMarkOptimization(Assembly):
     def __init__(self):
         """Creates a new Assembly containing a MultiFunction and an optimizer"""
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
 
         super(BenchMarkOptimization, self).__init__()
 
@@ -219,7 +217,7 @@ class BenchMarkOptimization(Assembly):
 
         # PyOpt Flags
         self.driver.optimizer = 'ALPSO'
-        self.driver.title='Bench mark problem 4 - Unconstrained'
+        self.driver.title = 'Bench mark problem 4 - Unconstrained'
         optdict = {}
         optdict['SwarmSize'] = 40
         optdict['maxOuterIter'] = 100
@@ -242,9 +240,9 @@ class BenchMarkOptimization(Assembly):
         self.driver.add_objective('benchmark.f_x')
 
         # ALPSO Design Variables
-        self.driver.add_parameter('benchmark.x1', low= 0, high=42)
-        self.driver.add_parameter('benchmark.x2', low= 0, high=42)
-        self.driver.add_parameter('benchmark.x3', low= 0, high=42)
+        self.driver.add_parameter('benchmark.x1', low=0, high=42)
+        self.driver.add_parameter('benchmark.x2', low=0, high=42)
+        self.driver.add_parameter('benchmark.x3', low=0, high=42)
 
         # ALPSO Constraints
         self.driver.add_constraint('benchmark.g1_x <= 0.0')
