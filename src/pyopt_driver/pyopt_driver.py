@@ -5,8 +5,8 @@ pyOpt is an object-oriented framework for formulating and solving nonlinear
 constrained optimization problems.
 """
 
-# pylint: disable-msg=E0611,F0401
-from numpy import array, float32, float64, int32, int64, zeros
+# pylint: disable=E0611,F0401
+from numpy import array, float32, float64, int32, int64
 
 from pyOpt import Optimization
 
@@ -91,8 +91,8 @@ class pyOptDriver(Driver):
             # Assuming uniform enumerated, discrete, or continuous for now.
             val = values[0]
             choices = []
-            if ('values' in metadata and \
-               isinstance(metadata['values'], (list, tuple, array, set))):
+            if 'values' in metadata and \
+               isinstance(metadata['values'], (list, tuple, array, set)):
                 vartype = 'd'
                 choices = metadata['values']
             elif isinstance(val, bool):
@@ -182,7 +182,6 @@ class pyOptDriver(Driver):
 
         self.set_parameters(dvals)
         self.run_iteration()
-        self.record_case()
 
         # Save the most recent solution.
         self.pyOpt_solution = opt_prob.solution(0)
@@ -243,12 +242,6 @@ class pyOptDriver(Driver):
 
             # Get the constraint evaluations
             g = array(self.eval_constraints(self.parent))
-
-            # Print out cases whenever the objective function is evaluated.
-            # TODO: pyOpt's History object might be better suited, though
-            # it does not seem to be part of the Optimization object at
-            # present.
-            self.record_case()
 
             fail = 0
 
