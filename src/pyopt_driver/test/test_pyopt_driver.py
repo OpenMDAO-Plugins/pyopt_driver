@@ -18,6 +18,33 @@ from openmdao.examples.simple.paraboloid import Paraboloid
 from openmdao.examples.simple.paraboloid_derivative import ParaboloidDerivative
 
 
+class OptimizationUnconstrained(Assembly):
+    """Unconstrained optimization of the Paraboloid with CONMIN."""
+
+    def configure(self):
+        """ Creates a new Assembly containing a Paraboloid and an optimizer"""
+
+        # pylint: disable-msg=E1101
+
+        # Create Paraboloid component instances
+        self.add('paraboloid', Paraboloid())
+
+        # Create CONMIN Optimizer instance
+        self.add('driver', pyOptDriver())
+
+        # Driver process definition
+        self.driver.workflow.add('paraboloid')
+
+        # CONMIN Objective
+        self.driver.add_objective('paraboloid.f_xy')
+
+        # CONMIN Design Variables
+        self.driver.add_parameter('paraboloid.x', low=-50., high=50.)
+        self.driver.add_parameter('paraboloid.y', low=-50., high=50.)
+
+        self.driver.print_results = False
+
+
 class OptimizationConstrained(Assembly):
     """Constrained optimization of the Paraboloid with CONMIN."""
 
@@ -257,6 +284,34 @@ class pyOptDriverTestCase(unittest.TestCase):
     def tearDown(self):
         self.top = None
 
+    def test_unconstrained(self):
+
+        try:
+            from pyopt_driver.pyopt_driver import pyOptDriver
+        except ImportError:
+            raise SkipTest("this test requires pyOpt to be installed")
+
+        self.top = OptimizationUnconstrained()
+        set_as_top(self.top)
+
+        for optimizer in [ 'CONMIN', 'COBYLA', 'SNOPT', 'SLSQP' ] :
+
+            try:
+                self.top.driver.optimizer = optimizer
+            except ValueError:
+                raise SkipTest("%s not present on this system" % optimizer)
+            
+            self.top.driver.title = 'Little Test'
+            optdict = {}
+            self.top.driver.options = optdict
+            self.top.driver.pyopt_diff = True
+            
+            self.top.run()
+            
+            assert_rel_error(self, self.top.paraboloid.x, 6.6667, 0.01)
+            assert_rel_error(self, self.top.paraboloid.y, -7.3333, 0.01)
+            
+
     def test_basic_CONMIN(self):
 
         try:
@@ -269,6 +324,7 @@ class pyOptDriverTestCase(unittest.TestCase):
 
         try:
             self.top.driver.optimizer = 'CONMIN'
+            self.top.driver.optimizer = 'COBYLA'
         except ValueError:
             raise SkipTest("CONMIN not present on this system")
 
