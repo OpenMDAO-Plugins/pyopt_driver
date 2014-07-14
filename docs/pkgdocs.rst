@@ -21,6 +21,7 @@ Package Metadata
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrained=pyopt_driver.test.test_pyopt_driver:OptimizationConstrained
     pyopt_driver.test.test_pyopt_driver.MultiFunction=pyopt_driver.test.test_pyopt_driver:MultiFunction
     pyopt_driver.test.test_pyopt_driver.ArrayOpt=pyopt_driver.test.test_pyopt_driver:ArrayOpt
+    pyopt_driver.test.test_pyopt_driver.OptimizationUnconstrained=pyopt_driver.test.test_pyopt_driver:OptimizationUnconstrained
     pyopt_driver.test.test_pyopt_driver.BenchMarkOptimization=pyopt_driver.test.test_pyopt_driver:BenchMarkOptimization
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     pyopt_driver.test.test_pyopt_driver.ArrayParaboloid=pyopt_driver.test.test_pyopt_driver:ArrayParaboloid
@@ -36,6 +37,7 @@ Package Metadata
     pyopt_driver.test.test_pyopt_driver.OptimizationConstrained=pyopt_driver.test.test_pyopt_driver:OptimizationConstrained
     pyopt_driver.test.test_pyopt_driver.MultiFunction=pyopt_driver.test.test_pyopt_driver:MultiFunction
     pyopt_driver.test.test_pyopt_driver.ArrayOpt=pyopt_driver.test.test_pyopt_driver:ArrayOpt
+    pyopt_driver.test.test_pyopt_driver.OptimizationUnconstrained=pyopt_driver.test.test_pyopt_driver:OptimizationUnconstrained
     pyopt_driver.test.test_pyopt_driver.BenchMarkOptimization=pyopt_driver.test.test_pyopt_driver:BenchMarkOptimization
     pyopt_driver.pyopt_driver.pyOptDriver=pyopt_driver.pyopt_driver:pyOptDriver
     pyopt_driver.test.test_pyopt_driver.ArrayParaboloid=pyopt_driver.test.test_pyopt_driver:ArrayParaboloid
