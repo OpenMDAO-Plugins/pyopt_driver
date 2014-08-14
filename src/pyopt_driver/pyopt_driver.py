@@ -54,6 +54,10 @@ class pyOptDriver(Driver):
                          desc='Print pyOpt results if True')
     pyopt_diff = Bool(False, iotype='in',
                       desc='Set to True to let pyOpt calculate the gradient')
+    store_hst = Bool(False, iotype='in',
+                     desc='Store optimization history if True')
+    hot_start = Bool(False, iotype='in',
+                     desc='resume optimization run using stored history if True')
 
     def __init__(self):
         """Initialize pyopt - not much needed."""
@@ -158,10 +162,12 @@ class pyOptDriver(Driver):
         # Execute the optimization problem
         if self.pyopt_diff:
             # Use pyOpt's internal finite difference
-            opt(opt_prob, sens_type='FD', sens_step=self.gradient_options.fd_step)
+            opt(opt_prob, sens_type='FD', sens_step=self.gradient_options.fd_step,
+                store_hst=self.store_hst, hot_start=self.hot_start)
         else:
             # Use OpenMDAO's differentiator for the gradient
-            opt(opt_prob, sens_type=self.gradfunc)
+            opt(opt_prob, sens_type=self.gradfunc, store_hst=self.store_hst,
+                hot_start=self.hot_start)
 
         # Print results
         if self.print_results:
