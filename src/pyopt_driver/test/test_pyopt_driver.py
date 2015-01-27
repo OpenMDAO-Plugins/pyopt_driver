@@ -285,6 +285,8 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.top = None
 
     def test_unconstrained(self):
+        
+        raise SkipTest("unconstrained opt not supported yet in pyOpt")  
 
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
