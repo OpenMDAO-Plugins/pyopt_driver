@@ -24,9 +24,9 @@ def _check_imports():
     """ Dynamically remove optimizers we don't have
     """
 
-    optlist = ['ALHSO', 'ALPSO', 'COBYLA', 'CONMIN', 'FSQP', 'GCMMA', 'KSOPT',
-               'MIDACO', 'MMA', 'MMFD', 'NLPQL', 'NSGA2', 'PSQP', 'SLSQP',
-               'SNOPT', 'SOLVOPT']
+    optlist = ['ALGENCIAN', 'ALHSO', 'ALPSO', 'COBYLA', 'CONMIN', 'FILTERSD',
+               'FSQP', 'GCMMA', 'KSOPT', 'MIDACO', 'MMA', 'MMFD', 'NLPQL', 'NLPQLP',
+               'NSGA2', 'PSQP', 'SDPEN', 'SLSQP', 'SNOPT', 'SOLVOPT']
 
     for optimizer in optlist[:]:
         try:
@@ -247,7 +247,7 @@ class pyOptDriver(Driver):
             f = array(self.eval_objectives())
 
             # Get the constraint evaluations
-            g = array(self.eval_constraints(self.parent))
+            g = array(self.eval_constraints(self.parent)).tolist()
 
             fail = 0
 

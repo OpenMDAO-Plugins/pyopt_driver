@@ -285,8 +285,6 @@ class pyOptDriverTestCase(unittest.TestCase):
         self.top = None
 
     def test_unconstrained(self):
-        
-        raise SkipTest("unconstrained opt not supported yet in pyOpt")  
 
         try:
             from pyopt_driver.pyopt_driver import pyOptDriver
@@ -302,17 +300,17 @@ class pyOptDriverTestCase(unittest.TestCase):
                 self.top.driver.optimizer = optimizer
             except ValueError:
                 raise SkipTest("%s not present on this system" % optimizer)
-            
+
             self.top.driver.title = 'Little Test'
             optdict = {}
             self.top.driver.options = optdict
             self.top.driver.pyopt_diff = True
-            
+
             self.top.run()
-            
+
             assert_rel_error(self, self.top.paraboloid.x, 6.6667, 0.01)
             assert_rel_error(self, self.top.paraboloid.y, -7.3333, 0.01)
-            
+
 
     def test_basic_CONMIN(self):
 

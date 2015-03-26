@@ -69,5 +69,5 @@ Package Metadata
 
 - **summary:** OpenMDAO driver wrapper for the open-source optimization package pyOpt
 
-- **version:** 0.19
+- **version:** 0.20
 

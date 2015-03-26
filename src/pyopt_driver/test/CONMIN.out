@@ -15,15 +15,15 @@
 
 
 
-     CONSTRAINED FUNCTION MINIMIZATION
+     UNCONSTRAINED FUNCTION MINIMIZATION
 
      CONTROL PARAMETERS
 
      IPRINT  NDV    ITMAX    NCON    NSIDE  ICNDIR   NSCAL   NFDG
-       2       2   10000       1       0       3       0       1
+       2       2   10000       0       0       3       0       1
 
      LINOBJ  ITRM     N1      N2      N3      N4      N5
-       0       2       4       5       5       5      10
+       0       2       4       4       4       4       8
 
          CT              CTMIN           CTL             CTLMIN
      -0.10000E+00     0.40000E-02    -0.10000E-01     0.10000E-02
@@ -34,8 +34,6 @@
          FDCH            FDCHM           ALPHAX          ABOBJ1
       0.10000E-01     0.10000E-01     0.10000E+00     0.10000E+00
 
-     ALL CONSTRAINTS ARE NON-LINEAR
-
 
      INITIAL FUNCTION INFORMATION
 
@@ -43,143 +41,84 @@
 
      DECISION VARIABLES (X-VECTOR)
        1)    0.00000E+00  0.00000E+00
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)    0.15000E+02
  
 
 
 
 
-     ITER =    1     OBJ =  -0.26828E+02
+     ITER =    1     OBJ =  -0.25942E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.74584E+01 -0.75416E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.17764E-14
+       1)    0.60744E+01 -0.80992E+01
 
 
 
 
-     ITER =    2     OBJ =  -0.26931E+02
+     ITER =    2     OBJ =  -0.27268E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.73848E+01 -0.78187E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.20350E+00
+       1)    0.68987E+01 -0.76082E+01
 
 
 
 
-     ITER =    3     OBJ =  -0.27073E+02
+     ITER =    3     OBJ =  -0.27268E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.72243E+01 -0.77757E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)    0.00000E+00
+       1)    0.69026E+01 -0.76059E+01
 
 
 
 
-     ITER =    4     OBJ =  -0.27076E+02
+     ITER =    4     OBJ =  -0.27269E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71999E+01 -0.78100E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.98715E-02
+       1)    0.69216E+01 -0.75864E+01
 
 
 
 
-     ITER =    5     OBJ =  -0.27077E+02
+     ITER =    5     OBJ =  -0.27333E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71854E+01 -0.78268E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12215E-01
+       1)    0.66680E+01 -0.73320E+01
 
 
 
 
-     ITER =    6     OBJ =  -0.27077E+02
+     ITER =    6     OBJ =  -0.27333E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71785E+01 -0.78342E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12678E-01
+       1)    0.66666E+01 -0.73333E+01
 
 
 
 
-     ITER =    7     OBJ =  -0.27077E+02
+     ITER =    7     OBJ =  -0.27333E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71754E+01 -0.78373E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12765E-01
-
-
-
-
-     ITER =    8     OBJ =  -0.27077E+02
-
-     DECISION VARIABLES (X-VECTOR)
-       1)    0.71741E+01 -0.78387E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12781E-01
-
-
-
-
-     ITER =    9     OBJ =  -0.27077E+02
-
-     DECISION VARIABLES (X-VECTOR)
-       1)    0.71732E+01 -0.78395E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12782E-01
+       1)    0.66667E+01 -0.73333E+01
 1
 
 
 
     FINAL OPTIMIZATION INFORMATION
 
-     OBJ =  -0.270769E+02
+     OBJ =  -0.273333E+02
 
      DECISION VARIABLES (X-VECTOR)
-       1)    0.71732E+01 -0.78395E+01
-
-     CONSTRAINT VALUES (G-VECTOR)
-       1)   -0.12782E-01
-
-     THERE ARE    1 ACTIVE CONSTRAINTS
-     CONSTRAINT NUMBERS ARE
-         1
-
-     THERE ARE    0 VIOLATED CONSTRAINTS
+       1)    0.66667E+01 -0.73333E+01
 
      TERMINATION CRITERION
           ABS(1-OBJ(I-1)/OBJ(I)) LESS THAN DELFUN FOR  2 ITERATIONS
           ABS(OBJ(I)-OBJ(I-1))   LESS THAN DABFUN FOR  2 ITERATIONS
 
-     NUMBER OF ITERATIONS =    9
+     NUMBER OF ITERATIONS =    7
 
-     OBJECTIVE FUNCTION WAS EVALUATED           27  TIMES
+     OBJECTIVE FUNCTION WAS EVALUATED           36  TIMES
 
-     CONSTRAINT FUNCTIONS WERE EVALUATED        27  TIMES
-
-     GRADIENT OF OBJECTIVE WAS CALCULATED        9  TIMES
-
-     GRADIENTS OF CONSTRAINTS WERE CALCULATED    9  TIMES
+     GRADIENT OF OBJECTIVE WAS CALCULATED        7  TIMES
 
 
-        NUMBER OF FUNC-CALLS:  NFUN =   27
-        NUMBER OF GRAD-CALLS:  NGRD =    9
+        NUMBER OF FUNC-CALLS:  NFUN =   36
+        NUMBER OF GRAD-CALLS:  NGRD =    7
