@@ -319,3 +319,5 @@ class pyOptDriver(Driver):
 
         return df, dg, fail
 
+    def requires_derivs(self):
+        return True
